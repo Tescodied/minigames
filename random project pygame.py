@@ -5,7 +5,7 @@ from time import sleep
 pygame.init()
 
 FPS = 60
-WIDTH, HEIGHT = 900, 900
+WIDTH, HEIGHT = 900, 900 # I found 900, 900 ideal
 SCREEN = pygame.display.set_mode((WIDTH,HEIGHT))
 
 PLAYER_GAP = WIDTH // 10 #between bottom of screen and player
@@ -17,19 +17,21 @@ PLAYER_OUTLINE_COLOUR = (255, 255, 255)
 player_lives = 5
 PLAYER_LIVES_MAX = player_lives
 
-ENEMY_WIDTH, ENEMY_HEIGHT = PLAYER_WIDTH // 2, PLAYER_HEIGHT // 2
+ENEMY_WIDTH, ENEMY_HEIGHT = int(PLAYER_WIDTH // 1.5), int(PLAYER_HEIGHT // 1.5)
+print(ENEMY_WIDTH, ENEMY_HEIGHT)
 ENEMY_SPAWN_HEIGHT_RANGES = (HEIGHT // 20, HEIGHT // 10)
 ENEMIES_COLOUR = (200, 50, 50)
 ENEMY_FALL_RATE = 10
 ENEMY_PADDING = HEIGHT // 100
 
-BLACK = (0,0,0)
-WHITE = (255,255,255)
-GREEN = (0, 200, 100)
-AMBER = (255, 150, 0)
-RED = (255,50,50)
-DARK_BLUE = (100, 100, 255)
-LIGHT_RED = (255, 10, 100)
+BLACK =         (0,0,0)
+WHITE =         (255,255,255)
+GREEN =         (0, 200, 100)
+AMBER =         (255, 150, 0)
+RED =           (255,50,50)
+DARK_BLUE =     (100, 100, 255)
+LIGHT_RED =     (255, 10, 100)
+LIGHT_GREY =    (50, 50, 50)
 
 BAR_COLOR = GREEN
 BAR_WIDTH = ENEMY_WIDTH // 2
@@ -113,7 +115,7 @@ def loading(speed_clock):
     LENGTH_COUNTER_LIST = len(counter_list) - 1 
 
     counter = LENGTH_COUNTER_LIST
-    counter_font = pygame.font.SysFont("Verdana", 200)
+    counter_font = pygame.font.SysFont("Verdana", WIDTH // 5)
 
     while counter >= 0:
         speed_clock.tick(FPS)
@@ -152,22 +154,22 @@ def main():
     running = True
     speed_clock = pygame.time.Clock()
 
-    player_xcor = WIDTH // 2 - PLAYER_WIDTH // 2 # starting + default position
+    player_xcor = WIDTH // 2 - PLAYER_WIDTH // 2 # starting / default position
+    player_ycor = HEIGHT - PLAYER_GAP
 
     enemies = []
     enemies_mask = []
 
     health_bars = []
 
-    lives_text_font = pygame.font.SysFont("Arial", 30)
-    score_text_font = pygame.font.SysFont("Arial", 50)
+    lives_text_font = pygame.font.SysFont("Arial", WIDTH // 30)
+    score_text_font = pygame.font.SysFont("Arial", WIDTH // 20)
 
     score = -1
     
     TEXT_PADDING = HEIGHT // 100
 
     NUM_ENEMIES, CHOSEN_COLOUR = get_difficulty(speed_clock)
-
     loading(speed_clock)
 
     while running:
@@ -175,15 +177,18 @@ def main():
 
         SCREEN.fill(BLACK)
 
+        ##DRAWS PLAYER AREA
+        player_area = pygame.rect.Rect(0,HEIGHT // 2, WIDTH, HEIGHT // 2)
+        pygame.draw.rect(SCREEN, LIGHT_GREY, player_area)
+
         ##DRAWS PLAYER
-        player_rect = pygame.rect.Rect(player_xcor, HEIGHT - PLAYER_GAP, PLAYER_WIDTH, PLAYER_HEIGHT)
-        player_mask_outline = pygame.rect.Rect(player_xcor - PLAYER_OUTLINE , HEIGHT - PLAYER_GAP - PLAYER_OUTLINE, PLAYER_WIDTH + PLAYER_OUTLINE * 2, PLAYER_HEIGHT + PLAYER_OUTLINE * 2)
+        player_rect = pygame.rect.Rect(player_xcor, player_ycor, PLAYER_WIDTH, PLAYER_HEIGHT)
+        player_mask_outline = pygame.rect.Rect(player_xcor - PLAYER_OUTLINE , player_rect.y - PLAYER_OUTLINE, PLAYER_WIDTH + PLAYER_OUTLINE * 2, PLAYER_HEIGHT + PLAYER_OUTLINE * 2)
 
         pygame.draw.rect(SCREEN, PLAYER_OUTLINE_COLOUR, player_mask_outline)
         pygame.draw.rect(SCREEN, PLAYER_COLOUR, player_rect)
 
         ##DRAWS ENEMIES
-            
         if len(enemies) > 0:
             for enemy in enemies:
                 if enemy.y < HEIGHT:
@@ -207,11 +212,11 @@ def main():
         score_display = score_text_font.render(f"Score: {score}", True, WHITE)
         lives_display = lives_text_font.render(f"Lives: {'♥ ' * player_lives}", True, WHITE)
 
+        ##DRAWS LIVES AND SCORE
         SCREEN.blit(lives_display, (WIDTH // 100, TEXT_PADDING))   
         SCREEN.blit(score_display, (WIDTH // 2 - score_display.get_width() // 2, TEXT_PADDING))
 
         ##DRAWS HEALTH BOOSTS
-
         if len(health_bars) > 0:
             for bar in health_bars:
                 if bar.y < HEIGHT:
@@ -235,7 +240,7 @@ def main():
             sleep(1)
             SCREEN.fill(BLACK)
 
-            losing_text_font = pygame.font.SysFont("Verdana", 100)
+            losing_text_font = pygame.font.SysFont("Verdana", WIDTH // 10)
 
             you_lost_text = losing_text_font.render("You lost!", False, WHITE)
             score_text = losing_text_font.render(f"Your score was {score}", False, CHOSEN_COLOUR)
@@ -259,11 +264,17 @@ def main():
 
         keys_pressed = pygame.key.get_pressed()
 
-        if keys_pressed[pygame.K_LEFT] and player_xcor > 0:
+        if keys_pressed[pygame.K_LEFT] and player_mask_outline.left > PLAYER_OUTLINE * 2:
             player_xcor -= PLAYER_SPEED
             
-        if keys_pressed[pygame.K_RIGHT] and player_xcor < WIDTH - PLAYER_WIDTH:
+        if keys_pressed[pygame.K_RIGHT] and player_mask_outline.left < WIDTH - (player_mask_outline.width + PLAYER_OUTLINE):
             player_xcor += PLAYER_SPEED
+
+        if keys_pressed[pygame.K_UP] and player_mask_outline.top > player_area.top + PLAYER_OUTLINE * 2:
+            player_ycor -= PLAYER_SPEED
+
+        if keys_pressed[pygame.K_DOWN] and player_mask_outline.top < HEIGHT - (player_mask_outline.height + PLAYER_OUTLINE):
+            player_ycor += PLAYER_SPEED
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -272,4 +283,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    
