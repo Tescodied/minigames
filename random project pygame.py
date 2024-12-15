@@ -35,6 +35,9 @@ BAR_COLOR = GREEN
 BAR_WIDTH = ENEMY_WIDTH // 2
 BAR_HEIGHT = ENEMY_HEIGHT // 2
 
+def quit_game():
+    quit("Thanks for playing")
+
 def calc_text_padding(options_text):
     padding = 0
 
@@ -97,7 +100,7 @@ def get_difficulty(clock):
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                quit()
+                quit_game()
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 for index, (difficulty, xcor) in enumerate(zip(options_text, difficulties_x)):
@@ -121,6 +124,10 @@ def loading(speed_clock):
         SCREEN.blit(counter_text, (WIDTH // 2 - counter_text.get_width() // 2, HEIGHT // 2 - counter_text.get_height() // 2))
 
         counter -= 1
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                quit_game()
 
         pygame.display.update()
 
@@ -246,7 +253,7 @@ def main():
             while True:
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
-                        quit()
+                        quit_game()
             
         pygame.display.update()
 
@@ -260,8 +267,9 @@ def main():
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                quit()
+                quit_game()
  
 
 if __name__ == "__main__":
     main()
+    
